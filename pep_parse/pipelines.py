@@ -30,7 +30,7 @@ class PepParsePipeline:
     def close_spider(self, spider):
         time = dt.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
         with open(
-            BASE_DIR / 'results' / ('status_summary_'+time+'.csv'),
+            BASE_DIR / 'results' / ('status_summary_' + time + '.csv'),
             mode='w',
             encoding='utf-8'
         ) as f:

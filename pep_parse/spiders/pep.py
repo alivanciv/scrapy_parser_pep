@@ -26,7 +26,7 @@ class PepSpider(scrapy.Spider):
         data = {
             'number': int(
                 re.sub(
-                    '\D', '', response.css('h1.page-title::text')
+                    r'\D', '', response.css('h1.page-title::text')
                     .get()
                     .split(' – ')[0]
                 )
