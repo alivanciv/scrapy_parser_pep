@@ -1,54 +1,37 @@
+import csv
 import datetime as dt
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import Session
 from collections import defaultdict
 
-# from pep_parse.models import Pep, Statistic, Base
 from pep_parse.settings import BASE_DIR
 
 
 class PepParsePipeline:
     def open_spider(self, spider):
         self.status_counter = defaultdict(int)
-        # engine = create_engine('sqlite:///sqlite.db')
-        # Base.metadata.create_all(engine)
-        # self.session = Session(engine)
+        self.status_counter_dict = defaultdict(dict)
 
     def process_item(self, item, spider):
         self.status_counter[item['status']] += 1
-        # pep = Pep(
-        #     number=item['number'],
-        #     name=item['name'],
-        #     status=item['status'],
-        # )
-
-        # self.session.add(pep)
-        # self.session.commit()
+        self.status_counter_dict[item['status']] = {
+            'Статус': item['status'],
+            'Количество': self.status_counter[item['status']]
+        }
         return item
 
     def close_spider(self, spider):
         time = dt.datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
-        with open(
+        self.status_counter_dict['Total'] = {
+            'Статус': 'Total',
+            'Количество': sum(self.status_counter.values()),
+        }
+        csvfile = open(
             BASE_DIR / 'results' / ('status_summary_' + time + '.csv'),
             mode='w',
+            newline='',
             encoding='utf-8'
-        ) as f:
-            total = 0
-            f.write('Статус,Количество\n')
-            for status in self.status_counter:
-                # statistic = Statistic(
-                #     status=status,
-                #     status_count=self.status_counter[status],
-                # )
-                # self.session.add(statistic)
-                # self.session.commit()
-                f.write(f'{status},{self.status_counter[status]}\n')
-                total += self.status_counter[status]
-            f.write(f'Total,{total}\n')
-        # statistic = Statistic(
-        #     status='Total',
-        #     status_count=total,
-        # )
-        # self.session.add(statistic)
-        # self.session.commit()
-        # self.session.close()
+        )
+        writer = csv.DictWriter(
+            csvfile, fieldnames=['Статус', 'Количество']
+        )
+        writer.writeheader()
+        writer.writerows(self.status_counter_dict.values())
